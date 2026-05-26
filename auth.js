@@ -170,7 +170,12 @@
       msgSignup.className = "auth__msg";
       const fd = new FormData(formSignup);
       try {
-        const r = await api("signup", { method: "POST", body: { name: fd.get("name"), email: fd.get("email"), password: fd.get("password") } });
+        const r = await api("signup", { method: "POST", body: {
+          name: fd.get("name"),
+          email: fd.get("email"),
+          phone: fd.get("phone"),
+          password: fd.get("password")
+        }});
         if (r.status === "approved" && r.token) {
           setToken(r.token);
           window.location.replace(r.user && r.user.role === "admin" ? "admin.html" : "index.html");
@@ -185,6 +190,23 @@
         msgSignup.classList.add("is-error");
       }
     });
+
+    // Máscara de telefone enquanto digita: (DD) 9XXXX-XXXX
+    const phoneInput = formSignup?.querySelector('input[name="phone"]');
+    if (phoneInput) {
+      phoneInput.addEventListener("input", e => {
+        let v = e.target.value.replace(/\D/g, "");
+        if (v.length > 11) v = v.slice(0, 11);
+        let f = v;
+        if (v.length > 0) f = "(" + v.slice(0, 2);
+        if (v.length >= 3) f += ") " + v.slice(2, v.length >= 11 ? 7 : 6);
+        if (v.length >= 7) {
+          const split = v.length === 11 ? 7 : 6;
+          f += "-" + v.slice(split, split + 4);
+        }
+        e.target.value = f;
+      });
+    }
   }
 
   async function logout() {

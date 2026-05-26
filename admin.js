@@ -50,7 +50,7 @@
   function renderUsers(users) {
     const body = document.getElementById("usersBody");
     if (!users.length) {
-      body.innerHTML = `<tr><td colspan="8" class="admin-empty">Nenhum usuário cadastrado ainda.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="9" class="admin-empty">Nenhum usuário cadastrado ainda.</td></tr>`;
       return;
     }
 
@@ -82,10 +82,15 @@
       }
       actions.push(`<button class="admin-btn" data-act="delete" data-id="${u.id}">Excluir</button>`);
 
+      const phoneCell = u.phone_wa
+        ? `<a href="https://wa.me/${escAttr(u.phone_wa)}" target="_blank" rel="noopener" class="admin-link" title="Abrir conversa no WhatsApp">${esc(u.phone_display || "—")}</a>`
+        : `<span class="muted">—</span>`;
+
       return `
         <tr>
           <td>${esc(u.name)}</td>
           <td><a href="mailto:${escAttr(u.email)}" class="admin-link">${esc(u.email)}</a></td>
+          <td>${phoneCell}</td>
           <td>${statusPill(u.status)}</td>
           <td><span class="pill ${u.role === "admin" ? "pill--ink" : ""}">${u.role}</span></td>
           <td class="muted">${fmtDate(u.created_at)}</td>

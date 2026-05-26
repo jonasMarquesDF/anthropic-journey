@@ -64,6 +64,7 @@ function db(): PDO {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE NOT NULL,
             name TEXT NOT NULL,
+            phone TEXT,
             password_hash TEXT NOT NULL,
             role TEXT NOT NULL DEFAULT "user",
             status TEXT NOT NULL DEFAULT "pending",
@@ -97,6 +98,17 @@ function db(): PDO {
         CREATE INDEX IF NOT EXISTS idx_log_created ON access_log(created_at);
         CREATE INDEX IF NOT EXISTS idx_sessions_exp ON sessions(expires_at);
     ');
+
+    // Migração: adiciona coluna phone se ainda não existir
+    try {
+        $cols = $pdo->query("PRAGMA table_info(users)")->fetchAll(PDO::FETCH_ASSOC);
+        $hasPhone = false;
+        foreach ($cols as $c) { if ($c['name'] === 'phone') { $hasPhone = true; break; } }
+        if (!$hasPhone) {
+            $pdo->exec('ALTER TABLE users ADD COLUMN phone TEXT');
+        }
+    } catch (Throwable $e) { /* segue */ }
+
     return $pdo;
 }
 
@@ -124,6 +136,35 @@ function client_ip(): string {
 function ua(): string { return substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 500); }
 function now_iso(): string { return gmdate('Y-m-d\TH:i:s\Z'); }
 
+/**
+ * Normaliza telefone brasileiro para formato +55DDDNNNNNNNNN.
+ * Aceita: (61) 99959-2673, 61999592673, +5561999592673, 5561999592673, etc.
+ * Retorna string vazia se inválido.
+ */
+function normalize_phone_br(string $raw): string {
+    $digits = preg_replace('/\D+/', '', $raw);
+    if ($digits === '') return '';
+    // já vem com DDI 55 e tamanho coerente
+    if (strpos($digits, '55') === 0 && (strlen($digits) === 12 || strlen($digits) === 13)) {
+        return '+' . $digits;
+    }
+    // 10 ou 11 dígitos: assume DDI 55 (Brasil)
+    if (strlen($digits) === 10 || strlen($digits) === 11) {
+        return '+55' . $digits;
+    }
+    // tamanhos suspeitos: rejeita
+    return '';
+}
+
+function format_phone_display(string $normalized): string {
+    if ($normalized === '') return '—';
+    // +5561999592673 → +55 (61) 99959-2673
+    if (preg_match('/^\+55(\d{2})(\d{4,5})(\d{4})$/', $normalized, $m)) {
+        return "+55 ({$m[1]}) {$m[2]}-{$m[3]}";
+    }
+    return $normalized;
+}
+
 function log_action(?int $userId, ?string $email, string $action): void {
     $stmt = db()->prepare('INSERT INTO access_log (user_id, email, action, ip, user_agent, created_at) VALUES (?,?,?,?,?,?)');
     $stmt->execute([$userId, $email, $action, client_ip(), ua(), now_iso()]);
@@ -132,20 +173,24 @@ function log_action(?int $userId, ?string $email, string $action): void {
 /* ----- NOTIFICAÇÕES ----- */
 
 /** Dispara notificações sem travar o usuário se algo falhar. */
-function notify_new_signup(string $name, string $email): void {
+function notify_new_signup(string $name, string $email, string $phone = ''): void {
+    $phoneDisplay = format_phone_display($phone);
     @notify_email(
         "Novo cadastro · Anthropic Journey",
         "Olá Jonas,\n\nUma nova pessoa se cadastrou na plataforma e está aguardando sua aprovação:\n\n" .
-        "Nome:  {$name}\n" .
-        "E-mail: {$email}\n" .
-        "Data:   " . date('d/m/Y H:i') . "\n\n" .
+        "Nome:     {$name}\n" .
+        "E-mail:   {$email}\n" .
+        "WhatsApp: {$phoneDisplay}\n" .
+        "Data:     " . date('d/m/Y H:i') . "\n\n" .
         "Acesse o painel admin para aprovar ou negar:\n" .
         SITE_URL . "/admin.html\n\n— Anthropic Journey"
     );
+    $waLink = $phone !== '' ? "\n💬 Chamar: https://wa.me/" . ltrim($phone, '+') : "";
     @notify_whatsapp(
         "🔔 *Novo cadastro pendente*\n\n" .
         "👤 *{$name}*\n" .
-        "✉️ {$email}\n\n" .
+        "✉️ {$email}\n" .
+        "📱 {$phoneDisplay}" . $waLink . "\n\n" .
         "Aprovar em: " . SITE_URL . "/admin.html"
     );
 }
@@ -238,11 +283,16 @@ try {
             $in = json_input();
             $email = strtolower(trim((string)($in['email'] ?? '')));
             $name  = trim((string)($in['name'] ?? ''));
+            $phoneRaw = trim((string)($in['phone'] ?? ''));
             $pwd   = (string)($in['password'] ?? '');
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) err(400, 'e-mail inválido');
             if (strlen($name) < 2) err(400, 'nome muito curto');
             if (strlen($pwd) < 8)  err(400, 'senha precisa de pelo menos 8 caracteres');
+
+            $phone = normalize_phone_br($phoneRaw);
+            if ($phoneRaw !== '' && $phone === '') err(400, 'WhatsApp inválido. Use formato (DDD) 9XXXX-XXXX');
+            if ($phone === '') err(400, 'informe seu WhatsApp para contato');
 
             $isAdmin = in_array($email, ADMIN_EMAILS, true);
             $role    = $isAdmin ? 'admin' : 'user';
@@ -250,8 +300,8 @@ try {
             $hash    = password_hash($pwd, PASSWORD_BCRYPT);
 
             try {
-                $stmt = db()->prepare('INSERT INTO users (email, name, password_hash, role, status, created_at) VALUES (?,?,?,?,?,?)');
-                $stmt->execute([$email, $name, $hash, $role, $status, now_iso()]);
+                $stmt = db()->prepare('INSERT INTO users (email, name, phone, password_hash, role, status, created_at) VALUES (?,?,?,?,?,?,?)');
+                $stmt->execute([$email, $name, $phone, $hash, $role, $status, now_iso()]);
             } catch (PDOException $e) {
                 if (strpos($e->getMessage(), 'UNIQUE') !== false) err(409, 'já existe conta com esse e-mail');
                 throw $e;
@@ -271,7 +321,7 @@ try {
             }
 
             // Cadastro pendente: notifica o admin (e-mail + WhatsApp)
-            notify_new_signup($name, $email);
+            notify_new_signup($name, $email, $phone);
             out(200, ['ok' => true, 'status' => 'pending']);
             break;
         }
@@ -348,7 +398,12 @@ try {
 
         case 'admin.users': {
             require_admin();
-            $rows = db()->query('SELECT u.id, u.email, u.name, u.role, u.status, u.created_at, u.last_login_at, (SELECT updated_at FROM progress p WHERE p.user_id = u.id) AS progress_updated_at FROM users u ORDER BY u.created_at DESC')->fetchAll(PDO::FETCH_ASSOC);
+            $rows = db()->query('SELECT u.id, u.email, u.name, u.phone, u.role, u.status, u.created_at, u.last_login_at, (SELECT updated_at FROM progress p WHERE p.user_id = u.id) AS progress_updated_at FROM users u ORDER BY u.created_at DESC')->fetchAll(PDO::FETCH_ASSOC);
+            // Adiciona display formatado
+            foreach ($rows as &$r) {
+                $r['phone_display'] = format_phone_display($r['phone'] ?? '');
+                $r['phone_wa'] = $r['phone'] ? ltrim($r['phone'], '+') : '';
+            }
             out(200, ['users'=>$rows]);
             break;
         }
