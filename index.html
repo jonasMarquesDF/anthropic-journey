@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#F0EEE6" />
+  <meta name="description" content="Jornada do zero ao avançado no ecossistema Anthropic e Claude. Tracker de evolução e portfólio editorial." />
+  <title>Anthropic Journey — do zero ao avançado</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Fraunces (display serif, optical size & weight variable) + Inter Tight + JetBrains Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter+Tight:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23D97757'/%3E%3Ctext x='50' y='70' text-anchor='middle' font-family='Georgia,serif' font-size='62' fill='%23F0EEE6' font-weight='600'%3EA%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+  <!-- Grain texture overlay (SVG noise) -->
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- ====== NAV ====== -->
+  <nav class="nav" id="nav">
+    <div class="nav__inner">
+      <a class="nav__brand" href="#top" aria-label="Início">
+        <span class="nav__mark">A</span>
+        <span class="nav__brand-text">
+          <span class="nav__title">Anthropic Journey</span>
+          <span class="nav__caption">do zero ao avançado · 14 semanas</span>
+        </span>
+      </a>
+      <ul class="nav__links">
+        <li><a href="#tracker">Tracker</a></li>
+        <li><a href="#badges">Badges</a></li>
+        <li><a href="#roadmap">Roteiro</a></li>
+        <li><a href="#portfolio">Portfólio</a></li>
+      </ul>
+      <div class="nav__tools">
+        <button class="nav__icon" id="themeBtn" title="Alternar tema" aria-label="Alternar tema">◐</button>
+        <button class="nav__icon" id="exportBtn" title="Exportar progresso (JSON)" aria-label="Exportar progresso">↓</button>
+        <button class="nav__icon" id="importBtn" title="Importar progresso (JSON)" aria-label="Importar progresso">↑</button>
+        <button class="nav__icon" id="resetBtn" title="Resetar progresso" aria-label="Resetar progresso">↻</button>
+        <input type="file" id="importInput" accept="application/json,.json" hidden />
+      </div>
+    </div>
+  </nav>
+
+  <!-- ====== HERO ====== -->
+  <header class="hero" id="top">
+    <div class="hero__grid">
+      <aside class="hero__meta">
+        <span class="tick">●</span>
+        <span class="hero__meta-text">Em curso · 22 recursos · oficiais</span>
+      </aside>
+
+      <h1 class="hero__title">
+        <span class="word" data-w="1">Domine</span>
+        <span class="word" data-w="2">o</span><br/>
+        <span class="word" data-w="3">ecossistema</span><br/>
+        <span class="hero__accent">
+          <em class="hero__em">Anthropic</em>
+          <span class="word" data-w="5">.</span>
+        </span>
+      </h1>
+
+      <p class="hero__lead">
+        Um caminho cronológico, oficial e gratuito.<br/>
+        Você sempre sabe onde parou. O portfólio se constrói sozinho.
+      </p>
+
+      <div class="hero__actions">
+        <a class="cta" href="#tracker" data-magnetic>
+          <span class="cta__label">Continuar de onde parei</span>
+          <span class="cta__arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="link-quiet" href="#roadmap">
+          Ver roteiro completo
+          <span aria-hidden="true">↘</span>
+        </a>
+      </div>
+
+      <div class="hero__stats" id="heroMetrics">
+        <div class="stat">
+          <span class="stat__num" id="m_done">00</span>
+          <span class="stat__lbl">concluídos</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="m_total">22</span>
+          <span class="stat__lbl">recursos</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="m_pct">0<small>%</small></span>
+          <span class="stat__lbl">completo</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="m_hours">0<small>h</small></span>
+          <span class="stat__lbl">de 55h</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__rule" aria-hidden="true"></div>
+
+    <!-- Marquee infinito -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <span>Fundamentos</span><span class="dot">✦</span>
+        <span>Prompt Engineering</span><span class="dot">✦</span>
+        <span>API & Desenvolvimento</span><span class="dot">✦</span>
+        <span>Claude Code</span><span class="dot">✦</span>
+        <span>Agentes</span><span class="dot">✦</span>
+        <span>Model Context Protocol</span><span class="dot">✦</span>
+        <span>Cloud & Enterprise</span><span class="dot">✦</span>
+        <span>Certificação</span><span class="dot">✦</span>
+        <!-- duplicado para loop perfeito -->
+        <span>Fundamentos</span><span class="dot">✦</span>
+        <span>Prompt Engineering</span><span class="dot">✦</span>
+        <span>API & Desenvolvimento</span><span class="dot">✦</span>
+        <span>Claude Code</span><span class="dot">✦</span>
+        <span>Agentes</span><span class="dot">✦</span>
+        <span>Model Context Protocol</span><span class="dot">✦</span>
+        <span>Cloud & Enterprise</span><span class="dot">✦</span>
+        <span>Certificação</span><span class="dot">✦</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Continue de onde parou -->
+  <section class="resume" id="resume" aria-live="polite"></section>
+
+  <!-- ====== STATS / FASES ====== -->
+  <section class="block reveal" id="stats">
+    <div class="block__head container">
+      <span class="kicker"><i>§</i> 01 — Sua evolução</span>
+      <h2 class="block__title"><em>Seis fases.</em> Um caminho.</h2>
+      <p class="block__lead">Cada marco aproxima você da maestria. Tudo é salvo automaticamente no seu navegador.</p>
+    </div>
+    <div class="container">
+      <div class="overall">
+        <div class="overall__bar"><div class="overall__fill" id="overallFill"></div></div>
+        <div class="overall__lbl"><span id="overallLabel">0 de 22 concluídos</span></div>
+      </div>
+      <div class="phases-grid" id="phasesGrid"></div>
+    </div>
+  </section>
+
+  <!-- ====== TRACKER ====== -->
+  <section class="block reveal" id="tracker">
+    <div class="block__head container">
+      <span class="kicker"><i>§</i> 02 — Tracker</span>
+      <h2 class="block__title">Marque conforme <em>avança.</em></h2>
+      <p class="block__lead">Toque o círculo: <span class="key">a fazer</span> → <span class="key">em andamento</span> → <span class="key">concluído</span>.</p>
+    </div>
+    <div class="container">
+      <div class="filters" role="tablist" aria-label="Filtrar por status">
+        <button class="chip is-active" data-filter="all" role="tab">Todos</button>
+        <button class="chip" data-filter="todo" role="tab">A fazer</button>
+        <button class="chip" data-filter="doing" role="tab">Em andamento</button>
+        <button class="chip" data-filter="done" role="tab">Concluídos</button>
+      </div>
+      <div class="phases" id="phases"></div>
+    </div>
+  </section>
+
+  <!-- ====== BADGES ====== -->
+  <section class="block reveal" id="badges">
+    <div class="block__head container">
+      <span class="kicker"><i>§</i> 03 — Badges</span>
+      <h2 class="block__title">Selos por <em>fase</em>.</h2>
+      <p class="block__lead">Concluiu a fase, ganhou o badge. Eles iluminam conforme você avança.</p>
+    </div>
+    <div class="container"><div class="badges-grid" id="badgesGrid"></div></div>
+  </section>
+
+  <!-- ====== ROADMAP ====== -->
+  <section class="block reveal" id="roadmap">
+    <div class="block__head container">
+      <span class="kicker"><i>§</i> 04 — Cronograma</span>
+      <h2 class="block__title">14 semanas, <em>linear.</em></h2>
+      <p class="block__lead">Visão de alto nível de toda a jornada.</p>
+    </div>
+    <div class="container"><div class="timeline" id="timeline"></div></div>
+  </section>
+
+  <!-- ====== PORTFOLIO ====== -->
+  <section class="block portfolio reveal" id="portfolio">
+    <div class="block__head container">
+      <span class="kicker"><i>§</i> 05 — Portfólio</span>
+      <h2 class="block__title">Conhecimento <em>público.</em></h2>
+      <p class="block__lead">Para o público geral. Construído automaticamente conforme você conclui cada curso.</p>
+    </div>
+    <div class="container">
+      <div id="portfolioBody"></div>
+
+      <div class="github-section hidden" id="githubSection">
+        <div class="github-head">
+          <span class="kicker"><i>§</i> 06 — GitHub</span>
+          <h3 class="github-title">Projetos no <em>GitHub</em>.</h3>
+          <p class="github-sub">Conecte seu usuário público para que seus repositórios apareçam aqui.</p>
+        </div>
+        <form class="github-form" id="githubForm" autocomplete="off">
+          <input type="text" id="githubInput" placeholder="seu-usuario-no-github" spellcheck="false" />
+          <button type="submit" class="cta cta--sm" data-magnetic><span class="cta__label">Conectar</span><span class="cta__arrow">→</span></button>
+          <button type="button" class="link-quiet" id="githubClear">Desconectar</button>
+        </form>
+        <div class="github-status" id="githubStatus"></div>
+        <div class="github-grid" id="githubGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__big">
+        <em>Feito com</em><br/>foco e <em>silêncio</em>.
+      </div>
+      <div class="footer__cols">
+        <div>
+          <span class="footer__lbl">Conteúdo</span>
+          <p>Anthropic Academy · GitHub · Docs oficiais</p>
+        </div>
+        <div>
+          <span class="footer__lbl">Hospedagem</span>
+          <p>GitHub Pages · Deploy automático via Actions</p>
+        </div>
+        <div>
+          <span class="footer__lbl">Tipografia</span>
+          <p>Fraunces · Inter Tight · JetBrains Mono</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast feedback -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Audiobook modal: ouvir o conteúdo do curso em PT-BR -->
+  <div class="audiobook" id="audiobook" role="dialog" aria-modal="true" aria-labelledby="abTitle" hidden>
+    <div class="audiobook__backdrop" data-close></div>
+    <div class="audiobook__panel" role="document">
+      <header class="audiobook__head">
+        <div>
+          <span class="audiobook__kicker" id="abKicker">Estudo em áudio</span>
+          <h2 class="audiobook__title" id="abTitle">Curso</h2>
+        </div>
+        <button class="audiobook__close" data-close aria-label="Fechar">✕</button>
+      </header>
+
+      <div class="audiobook__body" id="abBody"></div>
+
+      <footer class="audiobook__player">
+        <button class="ab-btn" id="abBack" aria-label="Voltar 15 segundos">«15</button>
+        <button class="ab-btn ab-btn--big" id="abPlay" aria-label="Tocar">▶</button>
+        <button class="ab-btn" id="abFwd" aria-label="Avançar 15 segundos">15»</button>
+        <div class="audiobook__info">
+          <div class="audiobook__progress"><span id="abProgress"></span></div>
+          <div class="audiobook__meta"><span id="abMeta">Pronto para ouvir · escolha uma voz em português abaixo</span></div>
+        </div>
+        <label class="audiobook__select">
+          <span>Voz</span>
+          <select id="abVoice" aria-label="Voz"></select>
+        </label>
+        <label class="audiobook__select">
+          <span>Velocidade</span>
+          <select id="abRate" aria-label="Velocidade">
+            <option value="0.85">0.85×</option>
+            <option value="1" selected>1.0×</option>
+            <option value="1.15">1.15×</option>
+            <option value="1.3">1.3×</option>
+            <option value="1.5">1.5×</option>
+            <option value="1.75">1.75×</option>
+            <option value="2">2.0×</option>
+          </select>
+        </label>
+      </footer>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="audiobook.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
