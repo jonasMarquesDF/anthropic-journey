@@ -1173,12 +1173,23 @@
     }
 
     const me = await window.AJ.whoami();
-    if (!me || me.status !== "approved") {
-      document.getElementById("loginBtn")?.removeAttribute("hidden");
+
+    // PORTÃO DE ACESSO: sem login OU sem aprovação → vai para login.html
+    if (!me) {
+      window.location.replace("login.html");
+      return;
+    }
+    if (me.status === "pending") {
+      // Conta criada mas ainda não aprovada
+      window.location.replace("login.html?pending=1");
+      return;
+    }
+    if (me.status !== "approved") {
+      window.location.replace("login.html");
       return;
     }
 
-    // Logado: mostra usuário e troca botões
+    // Logado e aprovado: mostra usuário e troca botões
     const navUser = document.getElementById("navUser");
     if (navUser) {
       navUser.textContent = me.name;
@@ -1229,8 +1240,8 @@
   function bindTheme() {
     const btn = document.getElementById("themeBtn");
     const saved = (() => { try { return localStorage.getItem(THEME_KEY); } catch (_) { return null; } })();
-    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initial = saved || (prefersDark ? "dark" : "light");
+    // Padrão: tema claro. Só usa escuro se o usuário tiver escolhido manualmente.
+    const initial = saved === "dark" ? "dark" : "light";
     applyTheme(initial);
     if (btn) {
       btn.addEventListener("click", () => {

@@ -5,6 +5,16 @@
 
 (function (global) {
 
+  // Aplica tema claro como padrão antes de qualquer renderização
+  (function setDefaultTheme() {
+    try {
+      const saved = localStorage.getItem("anthropic-journey-theme");
+      document.documentElement.setAttribute("data-theme", saved === "dark" ? "dark" : "light");
+    } catch (_) {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+  })();
+
   // Detecta automaticamente se temos backend disponível.
   // Em produção (HostGator) o api.php fica na mesma origem.
   // Em GitHub Pages (sem PHP) o site funciona em modo local.
@@ -82,10 +92,28 @@
   function bindLoginPage() {
     if (!document.body.classList.contains("auth-body")) return;
 
-    // já logado? redireciona
+    // Mensagem se chegou aqui após cadastro pendente
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("pending") === "1") {
+      const msg = document.getElementById("loginMsg");
+      if (msg) {
+        msg.classList.add("is-ok");
+        msg.innerHTML = "Sua conta está aguardando aprovação do administrador. Você receberá acesso assim que for liberada.";
+      }
+    }
+
+    // já logado e aprovado? redireciona
     whoami().then(u => {
       if (u && u.status === "approved") {
         window.location.replace(u.role === "admin" ? "admin.html" : "index.html");
+      } else if (u && u.status === "pending") {
+        // Conta pendente: mostra mensagem e desloga sessão
+        setToken("");
+        const msg = document.getElementById("loginMsg");
+        if (msg) {
+          msg.classList.add("is-ok");
+          msg.innerHTML = "Sua conta está aguardando aprovação do administrador.";
+        }
       }
     });
 
