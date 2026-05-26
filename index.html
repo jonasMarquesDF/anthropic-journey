@@ -36,9 +36,13 @@
         <li><a href="#portfolio">Portfólio</a></li>
       </ul>
       <div class="nav__tools">
+        <span class="nav__user" id="navUser" hidden></span>
+        <a class="nav__icon nav__icon--login" id="loginBtn" href="login.html" title="Entrar" hidden>↪</a>
         <button class="nav__icon" id="themeBtn" title="Alternar tema" aria-label="Alternar tema">◐</button>
         <button class="nav__icon" id="exportBtn" title="Exportar progresso (JSON)" aria-label="Exportar progresso">↓</button>
         <button class="nav__icon" id="importBtn" title="Importar progresso (JSON)" aria-label="Importar progresso">↑</button>
+        <a class="nav__icon" id="adminLink" href="admin.html" title="Painel administrativo" hidden>⚙</a>
+        <button class="nav__icon" id="logoutBtn" title="Sair" hidden>⎋</button>
         <button class="nav__icon" id="resetBtn" title="Resetar progresso" aria-label="Resetar progresso">↻</button>
         <input type="file" id="importInput" accept="application/json,.json" hidden />
       </div>
@@ -279,6 +283,7 @@
 
   <script src="data.js"></script>
   <script src="audiobook.js"></script>
+  <script src="auth.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

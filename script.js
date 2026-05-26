@@ -38,9 +38,9 @@
     PHASES.forEach(p => { phasesCompletedAt[p.id] = null; });
     return { items, filter: "all", phasesCompletedAt };
   }
-  function saveState(s) {
+  let saveState = function (s) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch (_) { /* ignore */ }
-  }
+  };
 
   // ---------- vídeos personalizados (URL do YouTube) ----------
   function loadVideos() {
@@ -1154,7 +1154,75 @@
     bindMagnetic();
     bindAudiobook();
     setupReveal();
+    bindAuthIntegration();
   });
+
+  // ---------- integração com backend (HostGator) ----------
+  // Se a API existir e o usuário estiver logado, sincroniza o progresso.
+  // Sem backend (GitHub Pages), tudo continua só no localStorage.
+  async function bindAuthIntegration() {
+    if (!window.AJ) return;
+    let backend = false;
+    try { backend = await window.AJ.hasBackend(); } catch (_) {}
+    if (!backend) {
+      // modo standalone — esconde botões de login
+      document.getElementById("loginBtn")?.setAttribute("hidden", "");
+      document.getElementById("logoutBtn")?.setAttribute("hidden", "");
+      document.getElementById("adminLink")?.setAttribute("hidden", "");
+      return;
+    }
+
+    const me = await window.AJ.whoami();
+    if (!me || me.status !== "approved") {
+      document.getElementById("loginBtn")?.removeAttribute("hidden");
+      return;
+    }
+
+    // Logado: mostra usuário e troca botões
+    const navUser = document.getElementById("navUser");
+    if (navUser) {
+      navUser.textContent = me.name;
+      navUser.hidden = false;
+    }
+    document.getElementById("loginBtn")?.setAttribute("hidden", "");
+    document.getElementById("logoutBtn")?.removeAttribute("hidden");
+    if (me.role === "admin") document.getElementById("adminLink")?.removeAttribute("hidden");
+
+    document.getElementById("logoutBtn")?.addEventListener("click", () => window.AJ.logout());
+
+    // Carrega progresso salvo no servidor (sobrescreve local)
+    try {
+      const r = await window.AJ.api("progress.get");
+      if (r.state && r.state.items) {
+        const def = defaultState();
+        state = {
+          ...def,
+          ...r.state,
+          items: { ...def.items, ...(r.state.items || {}) },
+          phasesCompletedAt: { ...def.phasesCompletedAt, ...(r.state.phasesCompletedAt || {}) }
+        };
+        if (!["all","todo","doing","done"].includes(state.filter)) state.filter = "all";
+        saveState(state);
+        rerenderAll();
+      }
+    } catch (e) { /* segue com o local */ }
+
+    // Toda vez que salvar, manda também para o servidor (debounce 800ms)
+    let pushTimer = null;
+    const _saveState = saveState;
+    window.__pushProgress = () => {
+      clearTimeout(pushTimer);
+      pushTimer = setTimeout(async () => {
+        try { await window.AJ.api("progress.save", { method: "POST", body: { state } }); }
+        catch (_) { /* tudo bem, está no local também */ }
+      }, 800);
+    };
+    // Patch: hook após cada saveState chamando o push
+    saveState = function(s) {
+      _saveState(s);
+      if (window.__pushProgress) window.__pushProgress();
+    };
+  }
 
   // ---------- theme toggle ----------
   const THEME_KEY = "anthropic-journey-theme";

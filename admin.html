@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Anthropic Journey</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23141413'/%3E%3Ctext x='50' y='70' text-anchor='middle' font-family='Georgia,serif' font-size='62' fill='%23F0EEE6' font-weight='600'%3EA%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <nav class="nav">
+    <div class="nav__inner">
+      <a class="nav__brand" href="index.html">
+        <span class="nav__mark">A</span>
+        <span class="nav__brand-text">
+          <span class="nav__title">Anthropic Journey</span>
+          <span class="nav__caption">painel administrativo</span>
+        </span>
+      </a>
+      <ul class="nav__links">
+        <li><a href="index.html">Site</a></li>
+        <li><a href="#users">Usuários</a></li>
+        <li><a href="#activity">Atividades</a></li>
+      </ul>
+      <div class="nav__tools">
+        <span class="admin-who" id="adminWho">—</span>
+        <button class="nav__icon" id="logoutBtn" title="Sair">⎋</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container admin">
+    <header class="admin__head">
+      <span class="kicker"><i>§</i> painel — admin</span>
+      <h1 class="block__title"><em>Quem</em> está aqui.</h1>
+      <p class="block__lead">Aprove novos cadastros, acompanhe progresso individual e veja o histórico de acessos.</p>
+    </header>
+
+    <section class="admin__stats" id="adminStats">
+      <div class="admin-stat"><span class="admin-stat__num" id="stPending">—</span><span class="admin-stat__lbl">aguardando</span></div>
+      <div class="admin-stat"><span class="admin-stat__num" id="stApproved">—</span><span class="admin-stat__lbl">aprovados</span></div>
+      <div class="admin-stat"><span class="admin-stat__num" id="stRejected">—</span><span class="admin-stat__lbl">negados</span></div>
+      <div class="admin-stat"><span class="admin-stat__num" id="stTotal">—</span><span class="admin-stat__lbl">total</span></div>
+    </section>
+
+    <section id="users">
+      <h2 class="admin-section-title">Usuários</h2>
+      <div class="admin__table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Status</th>
+              <th>Função</th>
+              <th>Cadastro</th>
+              <th>Último acesso</th>
+              <th>Progresso</th>
+              <th class="admin-table__actions">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="usersBody"><tr><td colspan="8" class="admin-empty">Carregando…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="activity">
+      <h2 class="admin-section-title">Histórico de acessos (últimos 200)</h2>
+      <div class="admin__table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Quando</th>
+              <th>E-mail</th>
+              <th>Ação</th>
+              <th>IP</th>
+              <th>Navegador</th>
+            </tr>
+          </thead>
+          <tbody id="activityBody"><tr><td colspan="5" class="admin-empty">Carregando…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal de progresso por usuário -->
+  <div class="audiobook" id="progModal" role="dialog" aria-modal="true" hidden>
+    <div class="audiobook__backdrop" data-close></div>
+    <div class="audiobook__panel" role="document">
+      <header class="audiobook__head">
+        <div>
+          <span class="audiobook__kicker" id="progKicker">progresso individual</span>
+          <h2 class="audiobook__title" id="progTitle">—</h2>
+        </div>
+        <button class="audiobook__close" data-close aria-label="Fechar">✕</button>
+      </header>
+      <div class="audiobook__body" id="progBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="data.js"></script>
+  <script src="auth.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

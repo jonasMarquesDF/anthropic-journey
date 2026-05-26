@@ -4,3 +4,17 @@ node_modules/
 .vscode/
 .idea/
 *.log
+
+# screenshots locais (não enviar)
+*.jpg
+*.jpeg
+*.png
+!**/assets/*.png
+!**/assets/*.jpg
+
+# banco de dados local de teste (não enviar)
+_db/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
