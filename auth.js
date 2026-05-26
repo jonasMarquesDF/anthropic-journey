@@ -92,28 +92,45 @@
   function bindLoginPage() {
     if (!document.body.classList.contains("auth-body")) return;
 
+    function showPending() {
+      const pending = document.getElementById("authPending");
+      const card = document.getElementById("authCard");
+      if (pending) pending.hidden = false;
+      if (card) card.style.display = "none";
+    }
+    function showLogin() {
+      const pending = document.getElementById("authPending");
+      const card = document.getElementById("authCard");
+      if (pending) pending.hidden = true;
+      if (card) card.style.display = "";
+    }
+
     // Mensagem se chegou aqui após cadastro pendente
     const params = new URLSearchParams(window.location.search);
     if (params.get("pending") === "1") {
-      const msg = document.getElementById("loginMsg");
-      if (msg) {
-        msg.classList.add("is-ok");
-        msg.innerHTML = "Sua conta está aguardando aprovação do administrador. Você receberá acesso assim que for liberada.";
-      }
+      showPending();
     }
+
+    // Botão "já fui aprovado, entrar"
+    document.getElementById("backToLogin")?.addEventListener("click", () => {
+      // Limpa a URL e mostra o form de login
+      window.history.replaceState({}, "", window.location.pathname);
+      showLogin();
+      // foca no campo de e-mail
+      const tab = document.querySelector('.auth__tab[data-tab="login"]');
+      if (tab) tab.click();
+      const emailInput = document.querySelector('#formLogin input[name="email"]');
+      if (emailInput) setTimeout(() => emailInput.focus(), 100);
+    });
 
     // já logado e aprovado? redireciona
     whoami().then(u => {
       if (u && u.status === "approved") {
         window.location.replace(u.role === "admin" ? "admin.html" : "index.html");
       } else if (u && u.status === "pending") {
-        // Conta pendente: mostra mensagem e desloga sessão
+        // Conta pendente: mostra a tela bonita e desloga sessão
         setToken("");
-        const msg = document.getElementById("loginMsg");
-        if (msg) {
-          msg.classList.add("is-ok");
-          msg.innerHTML = "Sua conta está aguardando aprovação do administrador.";
-        }
+        showPending();
       }
     });
 
@@ -159,9 +176,10 @@
           window.location.replace(r.user && r.user.role === "admin" ? "admin.html" : "index.html");
           return;
         }
-        msgSignup.classList.add("is-ok");
-        msgSignup.innerHTML = "Cadastro recebido. Sua conta está aguardando aprovação do administrador. Você receberá acesso assim que for liberada.";
+        // Pendente: mostra a tela editorial bonita
         formSignup.reset();
+        showPending();
+        window.scrollTo({ top: 0, behavior: "smooth" });
       } catch (err) {
         msgSignup.textContent = err.message;
         msgSignup.classList.add("is-error");

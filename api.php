@@ -24,6 +24,18 @@ const SESSION_DAYS = 30;
 const DB_DIR = __DIR__ . '/_db';
 const DB_PATH = DB_DIR . '/users.sqlite';
 
+/* ----- NOTIFICAÇÕES (e-mail + WhatsApp) ----- */
+// E-mail: deixe '' para desabilitar
+const NOTIFY_EMAIL_TO   = 'jonas@novitaads.com.br';
+const NOTIFY_EMAIL_FROM = 'no-reply@novitaads.com.br';
+const SITE_URL          = 'https://novitaads.com.br/anthropic';
+
+// WhatsApp via CallMeBot (grátis, requer setup uma vez — ver HOSPEDAGEM-HOSTGATOR.md)
+// Telefone com +código do país, sem espaços. Deixe APIKEY como '' para desabilitar
+// até você ter feito o setup do CallMeBot.
+const CALLMEBOT_PHONE   = '+5561999592673';
+const CALLMEBOT_APIKEY  = ''; // <— preencher após o setup do CallMeBot
+
 /* ----- BOOTSTRAP ----- */
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
@@ -117,6 +129,66 @@ function log_action(?int $userId, ?string $email, string $action): void {
     $stmt->execute([$userId, $email, $action, client_ip(), ua(), now_iso()]);
 }
 
+/* ----- NOTIFICAÇÕES ----- */
+
+/** Dispara notificações sem travar o usuário se algo falhar. */
+function notify_new_signup(string $name, string $email): void {
+    @notify_email(
+        "Novo cadastro · Anthropic Journey",
+        "Olá Jonas,\n\nUma nova pessoa se cadastrou na plataforma e está aguardando sua aprovação:\n\n" .
+        "Nome:  {$name}\n" .
+        "E-mail: {$email}\n" .
+        "Data:   " . date('d/m/Y H:i') . "\n\n" .
+        "Acesse o painel admin para aprovar ou negar:\n" .
+        SITE_URL . "/admin.html\n\n— Anthropic Journey"
+    );
+    @notify_whatsapp(
+        "🔔 *Novo cadastro pendente*\n\n" .
+        "👤 *{$name}*\n" .
+        "✉️ {$email}\n\n" .
+        "Aprovar em: " . SITE_URL . "/admin.html"
+    );
+}
+
+function notify_email(string $subject, string $message): bool {
+    if (NOTIFY_EMAIL_TO === '') return false;
+    if (!function_exists('mail')) return false;
+    $headers  = "From: " . NOTIFY_EMAIL_FROM . "\r\n";
+    $headers .= "Reply-To: " . NOTIFY_EMAIL_FROM . "\r\n";
+    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+    $headers .= "X-Mailer: AnthropicJourney/1.0\r\n";
+    return @mail(NOTIFY_EMAIL_TO, '=?UTF-8?B?' . base64_encode($subject) . '?=', $message, $headers);
+}
+
+function notify_whatsapp(string $text): bool {
+    if (CALLMEBOT_APIKEY === '' || CALLMEBOT_PHONE === '') return false;
+    $url = 'https://api.callmebot.com/whatsapp.php?' . http_build_query([
+        'phone'  => CALLMEBOT_PHONE,
+        'text'   => $text,
+        'apikey' => CALLMEBOT_APIKEY,
+    ]);
+    $ctx = stream_context_create(['http' => ['timeout' => 5, 'ignore_errors' => true]]);
+    $resp = @file_get_contents($url, false, $ctx);
+    return $resp !== false;
+}
+
+/** Avisa o usuário que o acesso foi liberado. */
+function notify_user_approved(string $userEmail, string $userName): bool {
+    if (!filter_var($userEmail, FILTER_VALIDATE_EMAIL)) return false;
+    if (!function_exists('mail')) return false;
+    $subject = "Seu acesso foi liberado · Anthropic Journey";
+    $message = "Olá {$userName},\n\n" .
+        "Seu cadastro na Anthropic Journey foi aprovado pelo administrador.\n" .
+        "Você já pode entrar e começar sua jornada de estudos.\n\n" .
+        "Acesse: " . SITE_URL . "/login.html\n\n" .
+        "Bons estudos.\n— Anthropic Journey";
+    $headers  = "From: " . NOTIFY_EMAIL_FROM . "\r\n";
+    $headers .= "Reply-To: " . NOTIFY_EMAIL_FROM . "\r\n";
+    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+    $headers .= "X-Mailer: AnthropicJourney/1.0\r\n";
+    return @mail($userEmail, '=?UTF-8?B?' . base64_encode($subject) . '?=', $message, $headers);
+}
+
 function token_from_request(): ?string {
     $h = $_SERVER['HTTP_X_AUTH_TOKEN'] ?? '';
     if ($h) return $h;
@@ -197,6 +269,9 @@ try {
                 log_action($id, $email, 'login');
                 out(200, ['ok' => true, 'status' => 'approved', 'token' => $token, 'user' => ['email'=>$email,'name'=>$name,'role'=>$role,'status'=>$status]]);
             }
+
+            // Cadastro pendente: notifica o admin (e-mail + WhatsApp)
+            notify_new_signup($name, $email);
             out(200, ['ok' => true, 'status' => 'pending']);
             break;
         }
@@ -285,6 +360,14 @@ try {
             if (!$id) err(400, 'id obrigatório');
             db()->prepare('UPDATE users SET status = "approved" WHERE id = ?')->execute([$id]);
             log_action($id, null, 'approved_by_admin');
+
+            // Avisa o usuário aprovado
+            $u = db()->prepare('SELECT email, name FROM users WHERE id = ?');
+            $u->execute([$id]);
+            if ($row = $u->fetch(PDO::FETCH_ASSOC)) {
+                @notify_user_approved($row['email'], $row['name']);
+            }
+
             out(200, ['ok'=>true]);
             break;
         }

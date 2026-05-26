@@ -26,7 +26,57 @@
   <main class="auth">
     <a href="index.html" class="auth__back">← Voltar para o site</a>
 
-    <div class="auth__card">
+    <!-- Tela de cadastro recebido (aparece após signup pendente) -->
+    <div class="auth-pending" id="authPending" hidden>
+      <div class="auth-pending__icon">
+        <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="40" cy="40" r="38" stroke="currentColor" stroke-width="1.5" opacity="0.25"/>
+          <circle cx="40" cy="40" r="38" stroke="currentColor" stroke-width="1.5" stroke-dasharray="60 240" stroke-linecap="round" transform="rotate(-90 40 40)">
+            <animateTransform attributeName="transform" type="rotate" from="-90 40 40" to="270 40 40" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <path d="M28 42 L36 50 L54 30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0">
+            <animate attributeName="opacity" from="0" to="1" begin="0.4s" dur="0.5s" fill="freeze"/>
+          </path>
+        </svg>
+      </div>
+      <span class="auth-pending__kicker">cadastro recebido</span>
+      <h1 class="auth-pending__title">Sua conta está em <em>análise</em>.</h1>
+      <p class="auth-pending__lead">
+        O administrador foi notificado por <strong>e-mail</strong> e <strong>WhatsApp</strong>.
+        Assim que sua conta for aprovada, você receberá um aviso por e-mail e poderá entrar normalmente.
+      </p>
+
+      <div class="auth-pending__steps">
+        <div class="auth-pending__step">
+          <span class="auth-pending__step-num">01</span>
+          <div>
+            <strong>Aguarde a aprovação</strong>
+            <p>Em geral menos de algumas horas. O administrador revisa cada cadastro pessoalmente.</p>
+          </div>
+        </div>
+        <div class="auth-pending__step">
+          <span class="auth-pending__step-num">02</span>
+          <div>
+            <strong>Receba o aviso</strong>
+            <p>Um e-mail confirma que seu acesso foi liberado. Confira a caixa de entrada e a aba de spam.</p>
+          </div>
+        </div>
+        <div class="auth-pending__step">
+          <span class="auth-pending__step-num">03</span>
+          <div>
+            <strong>Volte e entre</strong>
+            <p>Use o mesmo e-mail e senha que você acabou de cadastrar.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-pending__cta">
+        <button type="button" class="auth__submit" id="backToLogin">Já fui aprovado · entrar →</button>
+        <a href="index.html" class="auth__back" style="margin-top:12px;">Voltar ao site</a>
+      </div>
+    </div>
+
+    <div class="auth__card" id="authCard">
       <div class="auth__brand">
         <span class="auth__mark">A</span>
         <div>

@@ -1851,3 +1851,103 @@ section.reveal {
 .prog-item--doing .prog-dot { color: var(--coral); }
 .prog-item--todo { color: var(--text-mute); }
 .prog-item--todo .prog-dot { color: var(--text-mute); }
+
+
+/* =========================================================
+   Tela editorial de "cadastro recebido"
+   ========================================================= */
+.auth-pending {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 48px 40px 40px;
+  text-align: center;
+  box-shadow: var(--shadow-2);
+  animation: fade-in .55s var(--ease-out) both;
+}
+.auth-pending__icon {
+  width: 80px; height: 80px;
+  margin: 0 auto 24px;
+  color: var(--coral);
+  display: grid; place-items: center;
+}
+.auth-pending__icon svg { width: 100%; height: 100%; }
+.auth-pending__kicker {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--coral);
+  display: inline-block;
+  margin-bottom: 14px;
+}
+.auth-pending__title {
+  font-family: "Fraunces", serif;
+  font-variation-settings: "opsz" 144, "SOFT" 60;
+  font-weight: 350;
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  margin: 0 0 16px;
+}
+.auth-pending__title em {
+  font-style: italic;
+  color: var(--coral);
+  font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+}
+.auth-pending__lead {
+  font-size: 15px;
+  color: var(--text-soft);
+  line-height: 1.6;
+  max-width: 420px;
+  margin: 0 auto 36px;
+}
+.auth-pending__lead strong { color: var(--text); font-weight: 600; }
+
+.auth-pending__steps {
+  display: grid; gap: 16px;
+  margin: 0 0 32px;
+  text-align: left;
+}
+.auth-pending__step {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 16px 18px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  transition: border-color .25s var(--ease-out);
+}
+.auth-pending__step:hover { border-color: color-mix(in srgb, var(--coral) 30%, var(--line)); }
+.auth-pending__step-num {
+  font-family: "Fraunces", serif;
+  font-variation-settings: "opsz" 144;
+  font-weight: 350;
+  font-size: 28px;
+  color: var(--coral);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  flex-shrink: 0;
+  min-width: 36px;
+}
+.auth-pending__step strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.auth-pending__step p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+.auth-pending__cta {
+  display: flex; flex-direction: column; align-items: center;
+}
+.auth-pending__cta .auth__submit { max-width: 300px; }
+.auth-pending__cta .auth__back { font-size: 12px; }
+
+@media (max-width: 520px) {
+  .auth-pending { padding: 36px 24px 28px; }
+  .auth-pending__step { padding: 14px; }
+}

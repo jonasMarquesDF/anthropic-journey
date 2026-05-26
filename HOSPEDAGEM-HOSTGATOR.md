@@ -195,3 +195,77 @@ Os dois ambientes são independentes. Mantenha a HostGator como sua versão pess
 - Recomendado ativar **HTTPS** para o domínio se ainda não estiver. No cPanel, **SSL/TLS** → Let's Encrypt grátis
 
 Pronto. Qualquer dúvida, volte na seção 10.
+
+---
+
+## 13. Notificações por e-mail e WhatsApp (cadastros novos)
+
+Toda vez que alguém se cadastrar e ficar pendente, você recebe automaticamente:
+
+- **E-mail** em `jonas@novitaads.com.br` (já vem ativado)
+- **WhatsApp** em `+55 61 99959-2673` (precisa de setup único de 2 minutos)
+
+E quando você aprovar um usuário no painel, ele recebe um **e-mail confirmando** que o acesso foi liberado.
+
+### Ativar o WhatsApp (CallMeBot)
+
+CallMeBot é um serviço gratuito que envia mensagens para você no WhatsApp. Setup único:
+
+1. **Adicione o contato** `+34 644 25 21 73` na sua agenda do celular como `CallMeBot`
+2. Abra o WhatsApp no celular do número `+55 61 99959-2673`
+3. Mande para o CallMeBot a mensagem exata:
+   ```
+   I allow callmebot to send me messages
+   ```
+4. **Aguarde** uma resposta automática. Em segundos chega algo como:
+   ```
+   API Activated for your phone number.
+   Your APIKEY is 1234567
+   ```
+5. **Copie esse APIKEY** (só números)
+
+Agora ative no servidor:
+
+6. No cPanel da HostGator, abra o **Gerenciador de Arquivos**
+7. Vá em `public_html/anthropic/` (ou onde instalou)
+8. Clique direito em `api.php` → **Edit** ou **Editar**
+9. Procure pela linha:
+   ```php
+   const CALLMEBOT_APIKEY  = '';
+   ```
+10. Cole sua APIKEY entre as aspas:
+    ```php
+    const CALLMEBOT_APIKEY  = '1234567';
+    ```
+11. Clique em **Save Changes** no editor
+
+Pronto. A próxima pessoa que se cadastrar dispara mensagem para você no WhatsApp.
+
+### Testar
+
+1. Abra uma janela anônima no navegador
+2. Vá em `https://novitaads.com.br/anthropic/login.html`
+3. Crie uma conta com qualquer e-mail (ex: o seu pessoal)
+4. **Você deve receber em segundos**: e-mail em `jonas@novitaads.com.br` + mensagem no WhatsApp 61 99959-2673
+
+### O e-mail não chegou?
+
+- Cheque a aba de spam
+- Em alguns provedores, e-mail saindo de servidor compartilhado da HostGator pode demorar alguns minutos
+- Se nunca chegar, abra o cPanel → **Track Delivery** ou **Email Logs** para ver o status
+
+### O WhatsApp não chegou?
+
+- Confirme que mandou a mensagem `I allow callmebot to send me messages` exatamente, em inglês
+- Confirme que o número configurado em `CALLMEBOT_PHONE` (em `api.php`) é o mesmo que recebeu a APIKEY
+- O CallMeBot tem limite de 1 mensagem por minuto. Se testar muito rápido, espera 60 segundos
+- Se ainda não funcionar, abra `https://api.callmebot.com/whatsapp.php?phone=+5561999592673&text=teste&apikey=SUA_APIKEY` direto no navegador. Deve responder JSON com sucesso ou erro
+
+### Desativar notificações
+
+Se quiser desligar temporariamente, edite `api.php`:
+
+- E-mail: deixe `NOTIFY_EMAIL_TO = ''` (string vazia)
+- WhatsApp: deixe `CALLMEBOT_APIKEY = ''` (string vazia)
+
+Salve. Notificações param de ser enviadas até você reativar.
